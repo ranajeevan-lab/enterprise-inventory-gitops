@@ -10,7 +10,7 @@ replicaCount: 1
 image:
   repository: jeevanrana78/enterprise-inventory-app
   pullPolicy: Always
-  tag: "4df39bb"
+  tag: "96af4e1c"
 
 # This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
 imagePullSecrets: []
