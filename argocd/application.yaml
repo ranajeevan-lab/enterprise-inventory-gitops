@@ -1,0 +1,113 @@
+# ==============================================================================
+# FILE : application.yaml
+#
+# PURPOSE
+#   Register the Enterprise Inventory application with Argo CD.
+#
+# RESPONSIBILITIES
+#   - Monitor the GitOps repository
+#   - Deploy the Helm chart
+#   - Automatically synchronize changes
+#   - Automatically prune removed resources
+#   - Automatically self-heal drift
+#
+# SOURCE REPOSITORY
+#   https://github.com/ranajeevan-lab/enterprise-inventory-gitops.git
+#
+# HELM CHART
+#   enterprise-inventory/
+#
+# TARGET CLUSTER
+#   In-cluster Kubernetes (Amazon EKS)
+# ==============================================================================
+
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+
+metadata:
+  name: enterprise-inventory
+  namespace: argocd
+
+  labels:
+    app.kubernetes.io/name: enterprise-inventory
+    app.kubernetes.io/managed-by: argocd
+
+spec:
+
+  # ============================================================================
+  # Argo CD Project
+  # ============================================================================
+
+  project: default
+
+  # ============================================================================
+  # Source Repository
+  # ============================================================================
+
+  source:
+
+    repoURL: https://github.com/ranajeevan-lab/enterprise-inventory-gitops.git
+
+    targetRevision: main
+
+    path: enterprise-inventory
+
+    helm:
+
+      valueFiles:
+        - values.yaml
+
+  # ============================================================================
+  # Destination Cluster
+  # ============================================================================
+
+  destination:
+
+    server: https://kubernetes.default.svc
+
+    namespace: enterprise-inventory
+
+  # ============================================================================
+  # Sync Policy
+  #
+  # Automated:
+  #   prune
+  #   selfHeal
+  #
+  # Sync Options:
+  #   Create Namespace automatically
+  # ============================================================================
+
+  syncPolicy:
+
+    automated:
+
+      prune: true
+
+      selfHeal: true
+
+    syncOptions:
+
+      - CreateNamespace=true
+
+      - PrunePropagationPolicy=foreground
+
+      - PruneLast=true
+
+      - ApplyOutOfSyncOnly=true
+
+  # ============================================================================
+  # Ignore Differences
+  #
+  # Ignore replica count changes made by Horizontal Pod Autoscaler.
+  # ============================================================================
+
+  ignoreDifferences:
+
+    - group: apps
+
+      kind: Deployment
+
+      jsonPointers:
+
+        - /spec/replicas
